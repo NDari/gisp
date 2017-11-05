@@ -1,12 +1,11 @@
-package generator
+package main
 
 import (
-	"github.com/jcla1/gisp/parser"
 	"go/ast"
 	"go/token"
 )
 
-func EvalExprs(nodes []parser.Node) []ast.Expr {
+func EvalExprs(nodes []Node) []ast.Expr {
 	out := make([]ast.Expr, len(nodes))
 
 	for i, node := range nodes {
@@ -16,26 +15,26 @@ func EvalExprs(nodes []parser.Node) []ast.Expr {
 	return out
 }
 
-func EvalExpr(node parser.Node) ast.Expr {
+func EvalExpr(node Node) ast.Expr {
 	switch t := node.Type(); t {
-	case parser.NodeCall:
-		node := node.(*parser.CallNode)
+	case NodeCall:
+		node := node.(*CallNode)
 		return evalFuncCall(node)
 
-	case parser.NodeVector:
-		node := node.(*parser.VectorNode)
+	case NodeVector:
+		node := node.(*VectorNode)
 		return makeVector(anyType, EvalExprs(node.Nodes))
 
-	case parser.NodeNumber:
-		node := node.(*parser.NumberNode)
+	case NodeNumber:
+		node := node.(*NumberNode)
 		return makeBasicLit(node.NumberType, node.Value)
 
-	case parser.NodeString:
-		node := node.(*parser.StringNode)
+	case NodeString:
+		node := node.(*StringNode)
 		return makeBasicLit(token.STRING, node.Value)
 
-	case parser.NodeIdent:
-		node := node.(*parser.IdentNode)
+	case NodeIdent:
+		node := node.(*IdentNode)
 		return makeIdomaticSelector(node.Ident)
 
 	default:

@@ -1,8 +1,6 @@
 package main
 
 import (
-	"github.com/jcla1/gisp/generator"
-	"github.com/jcla1/gisp/parser"
 	"bufio"
 	"bytes"
 	"fmt"
@@ -19,9 +17,9 @@ func args(filename string) {
 		panic(err)
 	}
 
-	p := parser.ParseFromString(filename, string(b)+"\n")
+	p := ParseFromString(filename, string(b)+"\n")
 
-	a := generator.GenerateAST(p)
+	a := GenerateAST(p)
 
 	fset := token.NewFileSet()
 
@@ -41,11 +39,11 @@ func main() {
 	for {
 		fmt.Print(">> ")
 		line, _, _ := r.ReadLine()
-		p := parser.ParseFromString("<REPL>", string(line)+"\n")
+		p := ParseFromString("<REPL>", string(line)+"\n")
 		fmt.Println(p)
 
-		// a := generator.GenerateAST(p)
-		a := generator.EvalExprs(p)
+		// a := GenerateAST(p)
+		a := EvalExprs(p)
 		fset := token.NewFileSet()
 		ast.Print(fset, a)
 

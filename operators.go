@@ -1,7 +1,6 @@
-package generator
+package main
 
 import (
-	"github.com/jcla1/gisp/parser"
 	"go/ast"
 	"go/token"
 )
@@ -18,12 +17,12 @@ var (
 	}
 )
 
-func isCallableOperator(node *parser.CallNode) bool {
-	if node.Callee.Type() != parser.NodeIdent {
+func isCallableOperator(node *CallNode) bool {
+	if node.Callee.Type() != NodeIdent {
 		return false
 	}
 
-	ident := node.Callee.(*parser.IdentNode).Ident
+	ident := node.Callee.(*IdentNode).Ident
 
 	return isInSlice(ident, callableOperators)
 }
@@ -31,8 +30,8 @@ func isCallableOperator(node *parser.CallNode) bool {
 // We handle comparisons as a call to some go code, since you can only
 // compare ints, floats, cmplx, and such, you know...
 // We handle arithmetic operations as function calls, since all args are evaluated
-func makeNAryCallableExpr(node *parser.CallNode) *ast.CallExpr {
-	op := node.Callee.(*parser.IdentNode).Ident
+func makeNAryCallableExpr(node *CallNode) *ast.CallExpr {
+	op := node.Callee.(*IdentNode).Ident
 	args := EvalExprs(node.Args)
 	var selector string
 
@@ -66,12 +65,12 @@ func makeNAryCallableExpr(node *parser.CallNode) *ast.CallExpr {
 	return makeFuncCall(makeSelectorExpr(ast.NewIdent("core"), ast.NewIdent(selector)), args)
 }
 
-func isLogicOperator(node *parser.CallNode) bool {
-	if node.Callee.Type() != parser.NodeIdent {
+func isLogicOperator(node *CallNode) bool {
+	if node.Callee.Type() != NodeIdent {
 		return false
 	}
 
-	_, ok := logicOperatorMap[node.Callee.(*parser.IdentNode).Ident]
+	_, ok := logicOperatorMap[node.Callee.(*IdentNode).Ident]
 
 	if len(node.Args) < 2 && ok {
 		panic("can't use binary operator with only one argument!")
@@ -81,8 +80,8 @@ func isLogicOperator(node *parser.CallNode) bool {
 }
 
 // But logical comparisons are done properly, since those can short-circuit
-func makeNAryLogicExpr(node *parser.CallNode) *ast.BinaryExpr {
-	op := logicOperatorMap[node.Callee.(*parser.IdentNode).Ident]
+func makeNAryLogicExpr(node *CallNode) *ast.BinaryExpr {
+	op := logicOperatorMap[node.Callee.(*IdentNode).Ident]
 	outer := makeBinaryExpr(op, EvalExpr(node.Args[0]), EvalExpr(node.Args[1]))
 
 	for i := 2; i < len(node.Args); i++ {
@@ -100,12 +99,12 @@ func makeBinaryExpr(op token.Token, x, y ast.Expr) *ast.BinaryExpr {
 	}
 }
 
-func isUnaryOperator(node *parser.CallNode) bool {
-	if node.Callee.Type() != parser.NodeIdent {
+func isUnaryOperator(node *CallNode) bool {
+	if node.Callee.Type() != NodeIdent {
 		return false
 	}
 
-	_, ok := unaryOperatorMap[node.Callee.(*parser.IdentNode).Ident]
+	_, ok := unaryOperatorMap[node.Callee.(*IdentNode).Ident]
 
 	if len(node.Args) != 1 && ok {
 		panic("unary expression takes, exactly, one argument!")

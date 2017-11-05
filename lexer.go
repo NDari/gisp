@@ -1,4 +1,4 @@
-package lexer
+package main
 
 import (
 	"fmt"
@@ -6,8 +6,6 @@ import (
 	"unicode"
 	"unicode/utf8"
 )
-
-type Pos int
 
 type Item struct {
 	Type  ItemType
@@ -203,7 +201,7 @@ func lexIdentifier(l *Lexer) stateFn {
 	for r := l.next(); isAlphaNumeric(r); r = l.next() {
 	}
 	l.backup()
-	
+
 	l.emit(ItemIdent)
 	return lexWhitespace
 }

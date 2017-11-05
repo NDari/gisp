@@ -1,61 +1,59 @@
-package generator
+package main
 
 import (
-	"github.com/jcla1/gisp/parser"
-	h "github.com/jcla1/gisp/generator/helpers"
 	"go/ast"
 	"go/token"
 )
 
-func makeIfStmtFunc(node *parser.CallNode) ast.Expr {
+func makeIfStmtFunc(node *CallNode) ast.Expr {
 	var elseBody ast.Stmt
 	if len(node.Args) > 2 {
-		elseBody = makeBlockStmt(h.S(makeReturnStmt(h.E(EvalExpr(node.Args[2])))))
+		elseBody = makeBlockStmt(S(makeReturnStmt(E(EvalExpr(node.Args[2])))))
 	} else {
-		elseBody = makeBlockStmt(h.S(makeReturnStmt(h.E(ast.NewIdent("nil")))))
+		elseBody = makeBlockStmt(S(makeReturnStmt(E(ast.NewIdent("nil")))))
 	}
 
 	cond := EvalExpr(node.Args[0])
-	ifBody := makeBlockStmt(h.S(makeReturnStmt(h.E(EvalExpr(node.Args[1])))))
+	ifBody := makeBlockStmt(S(makeReturnStmt(E(EvalExpr(node.Args[1])))))
 
 	ifStmt := makeIfStmt(cond, ifBody, elseBody)
-	fnBody := makeBlockStmt(h.S(ifStmt))
+	fnBody := makeBlockStmt(S(ifStmt))
 
 	returnList := makeFieldList([]*ast.Field{makeField(nil, anyType)})
 	fnType := makeFuncType(returnList, nil)
 
 	fn := makeFuncLit(fnType, fnBody)
 
-	return makeFuncCall(fn, h.EmptyE())
+	return makeFuncCall(fn, EmptyE())
 }
 
-func makeLetFun(node *parser.CallNode) ast.Expr {
-	bindings := makeBindings(node.Args[0].(*parser.VectorNode), token.DEFINE)
+func makeLetFun(node *CallNode) ast.Expr {
+	bindings := makeBindings(node.Args[0].(*VectorNode), token.DEFINE)
 
 	body := append(bindings, wrapExprsWithStmt(EvalExprs(node.Args[1:]))...)
-	body[len(body)-1] = makeReturnStmt(h.E(body[len(body)-1].(*ast.ExprStmt).X))
+	body[len(body)-1] = makeReturnStmt(E(body[len(body)-1].(*ast.ExprStmt).X))
 
 	fieldList := makeFieldList([]*ast.Field{makeField(nil, anyType)})
 	typ := makeFuncType(fieldList, nil)
 	fn := makeFuncLit(typ, makeBlockStmt(body))
 
-	return makeFuncCall(fn, h.EmptyE())
+	return makeFuncCall(fn, EmptyE())
 }
 
-func makeBindings(bindings *parser.VectorNode, assignmentType token.Token) []ast.Stmt {
+func makeBindings(bindings *VectorNode, assignmentType token.Token) []ast.Stmt {
 	assignments := make([]ast.Stmt, len(bindings.Nodes))
 
 	for i, bind := range bindings.Nodes {
-		b := bind.(*parser.VectorNode)
+		b := bind.(*VectorNode)
 		idents := b.Nodes[:len(b.Nodes)-1]
 
 		vars := make([]ast.Expr, len(idents))
 
 		for j, ident := range idents {
-			vars[j] = makeIdomaticSelector(ident.(*parser.IdentNode).Ident)
+			vars[j] = makeIdomaticSelector(ident.(*IdentNode).Ident)
 		}
 
-		assignments[i] = makeAssignStmt(vars, h.E(EvalExpr(b.Nodes[len(b.Nodes)-1])), assignmentType)
+		assignments[i] = makeAssignStmt(vars, E(EvalExpr(b.Nodes[len(b.Nodes)-1])), assignmentType)
 	}
 
 	return assignments
@@ -70,7 +68,7 @@ func mainable(fn *ast.FuncLit) {
 	// return fn
 }
 
-// func makeTypeAssertFromArgList(expr ast.Expr, args []parser.Node) *ast.TypeAssertExpr {
+// func makeTypeAssertFromArgList(expr ast.Expr, args []Node) *ast.TypeAssertExpr {
 
 // 	argList
 

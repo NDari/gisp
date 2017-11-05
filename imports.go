@@ -1,12 +1,11 @@
-package generator
+package main
 
 import (
-	"github.com/jcla1/gisp/parser"
 	"go/ast"
 	"go/token"
 )
 
-func getImports(node *parser.CallNode) ast.Decl {
+func getImports(node *CallNode) ast.Decl {
 	if len(node.Args) < 2 {
 		return nil
 	}
@@ -15,10 +14,10 @@ func getImports(node *parser.CallNode) ast.Decl {
 	specs := make([]ast.Spec, len(imports))
 
 	for i, imp := range imports {
-		if t := imp.Type(); t == parser.NodeVector {
-			specs[i] = makeImportSpecFromVector(imp.(*parser.VectorNode))
-		} else if t == parser.NodeString {
-			path := makeBasicLit(token.STRING, imp.(*parser.StringNode).Value)
+		if t := imp.Type(); t == NodeVector {
+			specs[i] = makeImportSpecFromVector(imp.(*VectorNode))
+		} else if t == NodeString {
+			path := makeBasicLit(token.STRING, imp.(*StringNode).Value)
 			specs[i] = makeImportSpec(path, nil)
 		} else {
 			panic("invalid import!")
@@ -30,22 +29,22 @@ func getImports(node *parser.CallNode) ast.Decl {
 	return decl
 }
 
-func makeImportSpecFromVector(vect *parser.VectorNode) *ast.ImportSpec {
+func makeImportSpecFromVector(vect *VectorNode) *ast.ImportSpec {
 	if len(vect.Nodes) < 3 {
 		panic("invalid use of import!")
 	}
 
-	if vect.Nodes[0].Type() != parser.NodeString {
+	if vect.Nodes[0].Type() != NodeString {
 		panic("invalid use of import!")
 	}
 
-	pathString := vect.Nodes[0].(*parser.StringNode).Value
+	pathString := vect.Nodes[0].(*StringNode).Value
 	path := makeBasicLit(token.STRING, pathString)
 
-	if vect.Nodes[1].Type() != parser.NodeIdent || vect.Nodes[1].(*parser.IdentNode).Ident != ":as" {
+	if vect.Nodes[1].Type() != NodeIdent || vect.Nodes[1].(*IdentNode).Ident != ":as" {
 		panic("invalid use of import! expecting: \":as\"!!!")
 	}
-	name := ast.NewIdent(vect.Nodes[2].(*parser.IdentNode).Ident)
+	name := ast.NewIdent(vect.Nodes[2].(*IdentNode).Ident)
 
 	return makeImportSpec(path, name)
 }

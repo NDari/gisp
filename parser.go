@@ -1,7 +1,6 @@
-package parser
+package main
 
 import (
-	"github.com/jcla1/gisp/lexer"
 	"fmt"
 	"go/token"
 )
@@ -121,41 +120,41 @@ func (node *CallNode) String() string {
 var nilNode = NewIdentNode("nil")
 
 func ParseFromString(name, program string) []Node {
-	return Parse(lexer.Lex(name, program))
+	return Parse(Lex(name, program))
 }
 
-func Parse(l *lexer.Lexer) []Node {
+func Parse(l *Lexer) []Node {
 	return parser(l, make([]Node, 0), ' ')
 }
 
-func parser(l *lexer.Lexer, tree []Node, lookingFor rune) []Node {
-	for item := l.NextItem(); item.Type != lexer.ItemEOF; {
+func parser(l *Lexer, tree []Node, lookingFor rune) []Node {
+	for item := l.NextItem(); item.Type != ItemEOF; {
 		switch t := item.Type; t {
-		case lexer.ItemIdent:
+		case ItemIdent:
 			tree = append(tree, NewIdentNode(item.Value))
-		case lexer.ItemString:
+		case ItemString:
 			tree = append(tree, newStringNode(item.Value))
-		case lexer.ItemInt:
+		case ItemInt:
 			tree = append(tree, newIntNode(item.Value))
-		case lexer.ItemFloat:
+		case ItemFloat:
 			tree = append(tree, newFloatNode(item.Value))
-		case lexer.ItemComplex:
+		case ItemComplex:
 			tree = append(tree, newComplexNode(item.Value))
-		case lexer.ItemLeftParen:
+		case ItemLeftParen:
 			tree = append(tree, newCallNode(parser(l, make([]Node, 0), ')')))
-		case lexer.ItemLeftVect:
+		case ItemLeftVect:
 			tree = append(tree, newVectNode(parser(l, make([]Node, 0), ']')))
-		case lexer.ItemRightParen:
+		case ItemRightParen:
 			if lookingFor != ')' {
 				panic(fmt.Sprintf("unexpected \")\" [%d]", item.Pos))
 			}
 			return tree
-		case lexer.ItemRightVect:
+		case ItemRightVect:
 			if lookingFor != ']' {
 				panic(fmt.Sprintf("unexpected \"]\" [%d]", item.Pos))
 			}
 			return tree
-		case lexer.ItemError:
+		case ItemError:
 			println(item.Value)
 		default:
 			panic("Bad Item type")

@@ -1,7 +1,6 @@
-package generator
+package main
 
 import (
-	"github.com/jcla1/gisp/parser"
 	"bytes"
 	"go/ast"
 	"regexp"
@@ -9,7 +8,7 @@ import (
 	"strings"
 )
 
-func makeIdentSlice(nodes []*parser.IdentNode) []*ast.Ident {
+func makeIdentSlice(nodes []*IdentNode) []*ast.Ident {
 	out := make([]*ast.Ident, len(nodes))
 	for i, node := range nodes {
 		out[i] = ast.NewIdent(node.Ident)
@@ -37,7 +36,9 @@ func makeIdomaticSelector(src string) ast.Expr {
 }
 
 func makeIdomaticIdent(src string) *ast.Ident {
-	if src == "_" { return ast.NewIdent(src) }
+	if src == "_" {
+		return ast.NewIdent(src)
+	}
 	return ast.NewIdent(CamelCase(src, false))
 }
 
