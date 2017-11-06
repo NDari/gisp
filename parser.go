@@ -129,7 +129,7 @@ func Parse(l *Lexer) []Node {
 
 func parser(l *Lexer, tree []Node, lookingFor rune) []Node {
 	for item := l.NextItem(); item.Type != ItemEOF; {
-		switch t := item.Type; t {
+		switch item.Type {
 		case ItemIdent:
 			tree = append(tree, NewIdentNode(item.Value))
 		case ItemString:

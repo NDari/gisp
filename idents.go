@@ -42,7 +42,7 @@ func makeIdomaticIdent(src string) *ast.Ident {
 	return ast.NewIdent(CamelCase(src, false))
 }
 
-var camelingRegex = regexp.MustCompile("[0-9A-Za-z]+")
+var camelingRegex = regexp.MustCompile("[0-9A-Za-z.]+")
 
 func CamelCase(src string, capit bool) string {
 	byteSrc := []byte(src)
